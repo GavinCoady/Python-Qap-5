@@ -1,0 +1,531 @@
+# Final Sprint project
+# Gavin Coady
+# One Stop Insurance Company
+# Includes: Insurance Program , Policy listings Report , Monthly Payment Report
+# Last Edited:
+# Submitted to : Maurice Babbin
+
+import datetime
+import time
+
+# Province Info
+
+P = {"Newfoundland Labrador: NL", "Prince Edward Island: PE", "Nova Scotia: NS", "New Brunswick: NB",
+     "Quebec: QC", "Ontario: ON", "Manitoba: MB", "Saskatchewan: SK", "Alberta: AB",
+     "British Columbia: BC", "Yukon: YT", "Northwest Territories: NT", "Nunavut: NU"}
+Province_List = ["NL", "PE", "NS", "NB", "QC", "ON", "MB", "SK", "AB", "BC", "YT", "NT", "NU"]
+
+f = open('OSICDef.dat', 'r')
+POLiCY_NUM = int(f.readline().strip())
+BASIC_PREMIUM_RATE = float(f.readline().strip())
+ADD_CAR_DISC = float(f.readline().strip())
+EXT_LBLTY_RATE = float(f.readline().strip())
+GLASS_RATE = float(f.readline().strip())
+LOAN_CAR_COST = float(f.readline().strip())
+HST_RATE = float(f.readline().strip())
+PROCESS_FEE = float(f.readline())
+f.close()
+
+Policy_Date = datetime.datetime.now()
+
+
+# Functions
+
+def As_Dollars_Pad(Number):
+    Number_Display = f"${Number:,.2f}"
+    Number_Display = f"{Number_Display:>10}"
+    return Number_Display
+
+
+def Number_Pad(Number):
+    Number_Display = f"{Number:,}"
+    Number_Display = f"{Number_Display:>10}"
+    return Number_Display
+
+
+def Write(Variable, f):
+    if isinstance(Variable, str) == False:
+        if isinstance(Variable, datetime.date) == True:
+            return f.write(f"{Variable.strftime('%Y-%m-%d')},")
+        else:
+            Variable = round(Variable, 2)
+            return f.write(f"{str(Variable)},")
+    elif isinstance(Variable, str) == True:
+        return f.write(f"{Variable},")
+
+
+def Write_Space(Variable, f):
+    if isinstance(Variable, str) == False:
+        if isinstance(Variable, datetime.date) == True:
+            return f.write(f"{Variable.strftime('%Y-%m-%d')}\n")
+        else:
+            Variable = round(Variable, 2)
+            return f.write(f"{str(Variable)}\n")
+    elif isinstance(Variable, str) == True:
+        return f.write(f"{(Variable)}\n")
+
+
+def Name_Validation(Name):
+    for Char in Name:
+        if ("A" <= Char <= "Z" or "a" <= Char <= "z"
+                or Char == "-" or Char == "'"):
+            continue
+        else:
+            return False
+    return True
+
+
+def As_Dollars(Number):
+    Number_Display = f"${Number:,.2f}"
+    return Number_Display
+
+
+def Monthly_Start(Today):
+    Day = Today.day
+    if Day >= 25:
+        Next_Month = (Today + datetime.timedelta(days=45)).replace(day=1)
+    elif Day < 25:
+        Next_Month = (Today + datetime.timedelta(days=32)).replace(day=1)
+    return Next_Month
+
+
+def Format_Phone(Phone):
+    Phone = str(Phone)
+    return f"({Phone[0:3]}) {Phone[3:6]}-{Phone[6:10]}"
+
+
+# Open Defaults File
+
+#  START OF PROGRAM
+
+Tot_Extra_Cost = 0
+Extra_Lblty_Cost = 0
+Glass_Tot_Cost = 0
+Loan_Car_Tot = 0
+Total_Discount = 0
+
+while True:
+    print()
+    print("                     ONE STOP INSURANCE COMPANY")
+    print()
+    print("CUSTOMER INFO")
+    print()
+    while True:
+        Cust_First = input("First Name: ").title().strip()
+        if Cust_First == "":
+            print("First Name cannot be blank: Please Re-Enter")
+        elif len(Cust_First) > 20:
+            print("Invalid First Name Length: Cannot be longer than 20 letters ")
+        elif Name_Validation(Cust_First) == False:  # Function to Validate Name Input
+            print("Invalid Name Entered: Please use letters between (a-z), (-) and (') No Spaces")
+        else:
+            break
+
+    while True:
+        Cust_Last = input("Last Name: ").title().strip()
+        if Cust_Last == "":
+            print("Last Name cannot be blank: Please Re-Enter")
+        elif len(Cust_Last) > 30:
+            print("Invalid Last Name Length: Cannot be longer than 30 letters ")
+        elif Name_Validation(Cust_Last) == False:  # Function to Validate Name Input
+            print("Invalid Name Entered: Please use letters between (a-z), (-) and (') ")
+        else:
+            break
+
+    while True:
+        Cust_Address = input("Street Address: ").lstrip().rstrip().title()
+        if Cust_Address == "":
+            print("Invalid Entry: Cannot be blank")
+            break
+        else:
+            break
+
+    while True:
+        City = input("City: ").lstrip().rstrip()
+        if City == "":
+            print("City entry Cannot be Blank. Please Re-enter")
+        else:
+            break
+
+    while True:
+        Province = input("Enter two Digit Province Code: ").upper()
+        if Province == "":
+            print("Input Cannot be Blank. Please Re-enter")
+        elif len(Province) == 2 and Province in Province_List:
+            break
+        else:
+            print("Invalid Entry: Please Enter two Digit Province Code: ")
+            for Code in P:
+                print(" " * 2, Code)
+                print()
+
+    while True:
+        Postal_Code = input("Postal Code: ").upper().strip()
+        if Postal_Code == "":
+            print("Postal Code Entry Cannot be Blank. Please Re-enter")
+        elif (Postal_Code[0].isalpha() == True and Postal_Code[1].isdigit() == True and len(Postal_Code) == 6
+              and Postal_Code[2].isalpha() == True and Postal_Code[3].isdigit() == True and Postal_Code[4].isalpha()
+              and Postal_Code[5].isdigit() == True):
+            break
+        else:
+            print("Invalid Postal Code: Please Re-Enter")
+
+    while True:
+        Phone_Number = input("Enter 10 Digit Phone Number: ").strip().replace("-", "")
+        if Phone_Number.isdigit() == False:
+            print("Invalid Entry!: Enter 10 Digit Phone Number no '-' needed")
+        elif len(Phone_Number) != 10:
+            print("Invalid Entry!: Enter 10 Digit Phone Number no '-' needed")
+        else:
+            break
+
+    #  Processing
+    while True:
+        print()
+        print("CAR DETAILS: ")
+        print()
+        try:
+            Num_Cars_Ins = int(input("Enter the Number of Cars being Insured: "))
+        except:
+            print("Invalid Entry - Enter number of cars being insured")
+        else:
+            if Num_Cars_Ins < 1 or Num_Cars_Ins > 90:
+                print("Number of cars cant be less then 1 or over 90 - try again")
+            else:
+                break
+    print()
+    print("EXTRA OPTIONS: ")
+    print()
+
+    #  EXTRA LIABILITY CALC
+    while True:
+
+        Extra_lblty = input("Would you like Extra liability coverage Up to $1,000,000? (Y or N): ").upper().strip()
+
+        if Extra_lblty == "Y":
+            Extra_Lblty_Cost = EXT_LBLTY_RATE * Num_Cars_Ins
+            Lblty_Option = "OPTED IN"
+            break
+        elif Extra_lblty == "N":
+            Extra_lblty_Cost = 0
+            Lblty_Option = "OPTED OUT"
+            break
+        else:
+            print("Invalid Entry: Please Enter Y or N")
+
+    #  GLASS COVERAGE CALC
+
+    while True:
+        Glass_Cov = input("Would you like Glass coverage? (Y or N): ").upper()
+        if Glass_Cov == "Y":
+            Glass_Tot_Cost = GLASS_RATE * Num_Cars_Ins
+            Glass_Option = "OPTED IN"
+            break
+        elif Glass_Cov == "N":
+            Glass_Tot_Cost = 0
+            Glass_Option = "OPTED OUT"
+            break
+        else:
+            print("Invalid please try again")
+
+    #  LOAN CAR CALC
+    while True:
+        Loan_Car = input("Would you like the Loaner Car Option? (Y or N): ").upper()
+        if Loan_Car == "Y":
+            Loan_Car_Tot = LOAN_CAR_COST * Num_Cars_Ins
+            Loan_Option = "OPTED IN"
+            break
+        elif Loan_Car == "N":
+            Loan_Car_Tot = 0
+            Loan_Option = "OPTED OUT"
+            break
+        else:
+            print("Invalid entry - Please Enter Y (Yes) or N (No)")
+
+
+    Policy_Count = POLiCY_NUM +1
+    #  Calculation for discount rate
+    Discount_Rate = BASIC_PREMIUM_RATE * (1 - ADD_CAR_DISC)
+
+    if Num_Cars_Ins == 1:
+        Basic_Premium = BASIC_PREMIUM_RATE
+    else:
+        Basic_Premium = BASIC_PREMIUM_RATE + (Discount_Rate * (Num_Cars_Ins - 1))
+        Total_Discount = (BASIC_PREMIUM_RATE * ADD_CAR_DISC) * (Num_Cars_Ins - 1)
+
+    Tot_Extra_Costs = Extra_Lblty_Cost + Glass_Tot_Cost + Loan_Car_Tot
+    Tot_Insure_Prem = Basic_Premium + Tot_Extra_Costs
+    Hst_Tot = HST_RATE * Tot_Insure_Prem
+    Full_Cost = Tot_Insure_Prem + Hst_Tot
+    Policy_Date = datetime.datetime.now()
+    First_Pay = Monthly_Start
+    Policy_Number = f"{Policy_Count}-{Cust_First[0]}{Cust_Last[0]}"
+
+    print()
+    print("Payment Options")
+    print()
+    print(f"Total Insurance cost = {As_Dollars(Full_Cost)}")
+    while True:
+        Pay_Method = input("Would you like to pay in Full or Monthly (F or M)?: ").upper()
+        if Pay_Method == "F":
+            Month_Payment = 0
+            First_Pay = ""
+            break
+        elif Pay_Method == "M":
+            Month_Payment = (Full_Cost + PROCESS_FEE) / 12
+            First_Pay = Monthly_Start(Policy_Date)
+            break
+        else:
+            print("Invalid Entry: Enter (F) for Pay in full   or   (M) for Pay Monthly")
+    print()
+    Anykey = input("Press any key to continue...")
+
+    #  Formatting for receipt
+    print()
+    print()
+    print("                   One Stop Insurance ")
+    print()
+    print("                    CUSTOMER RECEIPT ")
+    print("                    ---------------- ")
+    print(f"POLICY NUMBER: {Policy_Number:6}{' ' * 10}     Policy Date: {Policy_Date.strftime('%Y-%m-%d'):>10}")
+    print("-" * 60)
+    print("CUSTOMER DETAILS: ")
+    print("*" * 20)
+    print(f"Customer Name                ->  {Cust_Last},{Cust_First:<20}")
+    print(f"Customer Phone               ->  {Format_Phone(Phone_Number)}")
+    print(f"Customer Address             ->  {Cust_Address}")
+    print(f"City/Prov/Post               ->  {City}, {Province:2}, {Postal_Code[0:3]}-{Postal_Code[3:6]}")
+    print("-" * 60)
+    print(f"Extra Options: ")
+    print(f"****************   # Vehicle(s) On Policy: {Num_Cars_Ins}")
+    print(f"Liability up to $1,000,000         ->      {Lblty_Option}")
+    print(f"Glass Coverage                     ->      {Glass_Option}")
+    print(f"Loaner Car Option                  ->      {Loan_Option} ")
+    print("~" * 60)
+    print("INSURANCE COSTS/PRICES: ")
+    print("----------------------")
+    print(f"Basic Premium Cost:                       ->      {As_Dollars_Pad(Basic_Premium)}")
+    if Num_Cars_Ins > 1:
+        print(f"Total discount                            ->    {As_Dollars_Pad(Total_Discount)}")
+    if Lblty_Option == "Y" or Glass_Option == "Y" or Loan_Option == "Y":
+        if Lblty_Option == "Y":
+            print(f"Liability Cost        ->      {As_Dollars_Pad(Extra_Lblty_Cost)}  ")
+        if Glass_Option == "Y":
+            print(f"Glass Coverage Cost   ->      {As_Dollars_Pad(Glass_Tot_Cost)}    ")
+        if Loan_Option == "Y":
+            print(f"Loaner Car Cost       ->      {As_Dollars_Pad(Loan_Car_Tot)}      ")
+    print("~" * 60)
+    print(f"Total Insurance Premium                   ->      {As_Dollars_Pad(Tot_Insure_Prem)}")
+    print(f"HST/Tax Cost                              ->    {As_Dollars_Pad(Hst_Tot)}")
+    print("~" * 60)
+    print(f"TOTAL COST                                ->      {As_Dollars_Pad(Full_Cost)}")
+    print("~" * 60)
+    if Pay_Method == "M":
+        print(f"MONTHLY PAYMENT SELECTED: ")
+        print(f"------------------------  ")
+        print(f"Monthly Payment               ->     {As_Dollars_Pad(Month_Payment)} ")
+        print(f"Process Fee Cost              ->    {As_Dollars_Pad(PROCESS_FEE)} ")
+        print(f"******************                               ")
+        print(f"First payment  (DD/MM/YY)     ->      Due Date: ({First_Pay.strftime('%Y-%m-%d')}) ")
+        print("-" * 60)
+        print("                      END OF RECEIPT     ")
+
+    AnyKey = input("Press any key to save entry")
+
+    #  ADDING TO POLICY NUMBER
+    f = open('Policies.dat', 'a')
+    Write(Policy_Number, f)
+    Write(Policy_Date, f)
+    Write(Cust_First, f)
+    Write(Cust_Last, f)
+    Write(Cust_Address, f)
+    Write(City, f)
+    Write(Province, f)
+    Write(Postal_Code, f)
+    Write(Phone_Number, f)
+    Write(Num_Cars_Ins, f)
+    Write(Extra_lblty, f)
+    Write(Glass_Cov, f)
+    Write(Loan_Car, f)
+    Write(Pay_Method, f)
+    Write_Space(Full_Cost, f)
+    f.close()
+
+    Policy_Count += 1
+
+    while True:
+        print()
+        print()
+        Continue = input("Would you like process another policy? (Y or N): ").upper()
+        if Continue == "Y":
+            break
+        if Continue == "N":
+            print("Have a nice Day!")
+            for wait in range(1, 5):
+                print('*', end=' ')
+                time.sleep(2)
+            break
+    if Continue == "N":
+        break
+
+
+f = open('OSICDef.dat', 'w')
+Write_Space(Policy_Count, f)
+Write_Space(BASIC_PREMIUM_RATE, f)
+Write_Space(ADD_CAR_DISC, f)
+Write_Space(EXT_LBLTY_RATE, f)
+Write_Space(GLASS_RATE, f)
+Write_Space(LOAN_CAR_COST, f)
+Write_Space(HST_RATE, f)
+Write_Space(PROCESS_FEE, f)
+f.close()
+
+Today = datetime.datetime.now()
+#  Report section
+print()
+Anykey = input("Press Enter To View Details Report")
+print()
+print()
+print(f"ONE STOP INSURANCE COMPANY             ")
+print(f"POLICY LISTINGS AS OF {Today.strftime('%d-%m-%Y')} ")
+print(f"")
+print(f"POLICY  CUSTOMER         INSURANCE      EXTRA        TOTAL")
+print(f"NUMBER  NAME             PREMIUM        COST        PREMIUM")
+print("=" * 60)
+print("                                          :")
+
+Insurance_Acc = 0
+Insurance_Tot_Acc = 0
+Hst_Total = 0
+Premium_Tot = 0
+Monthly_Cost = 0
+Extra_Costs = 0
+Total_Cost = 0
+Last_Name = 0
+First_Name = 0
+Policies_Acc = 0
+
+# CONSTANTS
+PREMIUM_RATE = 869.00
+DISCOUNT_RATE = float(.25)
+LIABILITY_RATE = float(130.00)
+GLASS_CHARGE = float(86.00)
+LOANER_RATE = float(58.00)
+TAX_CHARGE = float(.25)
+PROCESS = float(39.99)
+
+
+# Open the defaults file and read the values into variables
+f = open("Policies.dat", "r")
+
+for FileLine in f:
+
+    CustData = FileLine.split(",")
+    First_Name = CustData[2]
+    Last_Name = CustData[3]
+    Cars_Amount = int(CustData[9])
+    Extra_Liab_Choice = CustData[10]
+    Glass_Choice = CustData[11]
+    Loaner_Choice = CustData[12]
+    Pay_Choice = CustData[13]
+    Total_Acc = float(CustData[14])
+
+    Hst_Final = float(CustData[9]) * TAX_CHARGE
+
+
+
+    Insurance_Final = float(CustData[9]) * PREMIUM_RATE
+    if Cars_Amount > 1:
+        Insurance_Final = PREMIUM_RATE + (DISCOUNT_RATE * (float(CustData[9]) - 1))
+
+
+    Liability_Final = float(CustData[9]) * LIABILITY_RATE
+    if Lblty_Option == "N":
+        Liability_Final = 0
+
+
+    Glass_Final = float(CustData[9]) * GLASS_CHARGE
+    if Glass_Option == "N":
+        Glass_Final = 0
+
+    Loaner_Final = float(CustData[9]) * LOANER_RATE
+    if Loan_Option == "N":
+        Loaner_Final = 0
+
+
+
+    Policies_Acc = Policy_Count
+    Extra_Costs = Liability_Final + Glass_Final + Loaner_Final
+    Premium_Tot = Extra_Costs + Insurance_Acc
+    Hst_Total = TAX_CHARGE * Premium_Tot
+    Total_Cost = Hst_Total + Premium_Tot
+
+    print(f" {Policy_Count}   {Last_Name},{First_Name}   {As_Dollars_Pad(Insurance_Final)}"
+          f"  {As_Dollars_Pad(Extra_Costs)}  {As_Dollars_Pad(Premium_Tot)} ")
+
+print(f" {Policy_Count}   {Last_Name},{First_Name}      {As_Dollars_Pad(Insurance_Final)}"
+      f"   {As_Dollars_Pad(Extra_Costs)}  {As_Dollars_Pad(Premium_Tot)} ")
+
+print("")
+print("=" * 60)
+print(f"Total policies: {Policies_Acc}")
+
+
+for FileLine in f:
+
+    CustData = FileLine.split(",")
+    First_Name = CustData[2]
+    Last_Name = CustData[3]
+    Cars_Amount = int(CustData[9])
+    Extra_Liab_Choice = CustData[10]
+    Glass_Choice = CustData[11]
+    Loaner_Choice = CustData[12]
+    Pay_Choice = CustData[13]
+    Total_Acc = float(CustData[14])
+
+    Hst_Final = float(CustData[9]) * TAX_CHARGE
+
+
+
+    Insurance_Final = float(CustData[9]) * PREMIUM_RATE
+    if Cars_Amount < 1:
+        Insurance_Final = PREMIUM_RATE + (DISCOUNT_RATE * (float(CustData[9]) - 1))
+
+
+    Liability_Final = float(CustData[9]) * LIABILITY_RATE
+    if Lblty_Option == "N":
+        Liability_Final = 0
+
+
+    Glass_Final = float(CustData[9]) * GLASS_CHARGE
+    if Glass_Option == "N":
+        Glass_Final = 0
+
+    Loaner_Final = float(CustData[9]) * LOANER_RATE
+    if Loan_Option == "N":
+        Loaner_Final = 0
+
+
+
+    Policies_Acc = Policy_Count
+    Extra_Costs = Liability_Final + Glass_Final + Loaner_Final
+    Premium_Tot = Extra_Costs + Insurance_Acc
+    Hst_Total = TAX_CHARGE * Premium_Tot
+    Total_Cost = Hst_Total + Premium_Tot
+
+
+print(f"ONE STOP INSURANCE")
+print(f"MONTHLY PAYMENT LISTING AS OF {Today.strftime('%d-%m-%Y')} ")
+print(f"POLICY  CUSTOMER          TOTAL                  TOTAL       MONTHLY")
+print(f"NUMBER  NAME             PREMIUM       HST       COST        PAYMENT")
+if Pay_Method == "M":
+    Monthly_Cost = (Total_Cost + PROCESS_FEE) / 12
+    print(f"{Policy_Count}  {Last_Name},{First_Name}    {As_Dollars_Pad(Premium_Tot)} {As_Dollars_Pad(Hst_Total)} "
+      f"  {As_Dollars_Pad(Total_Cost)} {As_Dollars_Pad(Monthly_Cost)}")
+    print(f"=" * 72)
+print(f" {Policy_Count}  {Last_Name},{First_Name}    {As_Dollars_Pad(Premium_Tot)} {As_Dollars_Pad(Hst_Total)} "
+      f"  {As_Dollars_Pad(Total_Cost)} {As_Dollars_Pad(Monthly_Cost)}")
+print("=" * 72)
+print(f"Total policies: {Policies_Acc}")
+
+# End
